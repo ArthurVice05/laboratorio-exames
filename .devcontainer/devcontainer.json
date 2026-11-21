@@ -1,0 +1,21 @@
+{
+  "name": "Laboratório de Exames - RabbitMQ",
+  "build": { "dockerfile": "Dockerfile" },
+
+  // 8080 produtor | 8081 portal | 8082 comunicação | 8083 triagem | 8084 auditoria
+  // 8085 e 8086 indicadores | 15672 painel do RabbitMQ
+  "forwardPorts": [8080, 8081, 8082, 8083, 8084, 8085, 8086, 15672],
+  "portsAttributes": {
+    "15672": { "label": "Painel RabbitMQ" },
+    "8080": { "label": "Produtor" }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["vscjava.vscode-java-pack", "vmware.vscode-spring-boot"]
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/init-rabbitmq.sh",
+  "postStartCommand": "bash .devcontainer/init-rabbitmq.sh"
+}

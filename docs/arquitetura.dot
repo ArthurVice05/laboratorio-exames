@@ -1,0 +1,42 @@
+// Diagrama da arquitetura (Graphviz): dot -Tpng -Gdpi=150 arquitetura.dot -o arquitetura.png
+digraph Laboratorio {
+  graph [rankdir=LR, nodesep=0.35, ranksep=1.0, fontname="Helvetica", labelloc=t, fontsize=20,
+         label=<<b>Laboratório de exames — fluxo de mensageria no RabbitMQ</b><br/><font point-size="12">routing key = tipo do evento (familia.acao)</font>>];
+  node [fontname="Helvetica", fontsize=12];
+  edge [fontname="Helvetica", fontsize=11, color="#44506b"];
+
+  produtor [shape=box, style="rounded,filled", fillcolor="#2f5da8", fontcolor="white",
+            label=<<b>Produtor</b><br/>API :8080<br/><font point-size="10">laudo.liberado · laudo.invalidado<br/>amostra.recebida · amostra.rejeitada</font>>];
+
+  exchange [shape=hexagon, style=filled, fillcolor="#b04a12", fontcolor="white",
+            label=<<b>laboratorio.eventos</b><br/>exchange TOPIC>];
+
+  node [shape=cylinder, style=filled, fillcolor="#f1ece0"];
+  q1 [label=<<b>lab.portal-resultados</b>>];
+  q2 [label=<<b>lab.comunicacao</b>>];
+  q3 [label=<<b>lab.triagem</b>>];
+  q4 [label=<<b>lab.auditoria</b>>];
+  q5 [label=<<b>lab.indicadores</b>>];
+
+  node [shape=box, style="rounded,filled", fillcolor="#e4ecf7", fontcolor="#1c2033"];
+  c1 [label=<<b>1. Portal de resultados</b> :8081<br/><font point-size="10">publica o laudo (idempotente)</font>>];
+  c2 [label=<<b>2. Comunicação</b> :8082<br/><font point-size="10">registra avisos</font>>];
+  c3 [label=<<b>3. Triagem</b> :8083<br/><font point-size="10">lote e motivo das amostras</font>>];
+  c4 [label=<<b>4. Auditoria</b> :8084<br/><font point-size="10">histórico por id, tipo e horário</font>>];
+  c5a [label=<<b>5. Indicadores — instância 1</b> :8085>];
+  c5b [label=<<b>5. Indicadores — instância 2</b> :8086>];
+
+  dlx [shape=hexagon, style=filled, fillcolor="#e9e4d8", label=<laboratorio.dlx<br/>fanout>];
+  dlq [shape=cylinder, style=filled, fillcolor="#e9e4d8", label=<laboratorio.dlq<br/><font point-size="10">mensagens com falha</font>>];
+
+  produtor -> exchange [label="publica\n(persistente)"];
+  exchange -> q1 [label="laudo.liberado"];
+  exchange -> q2 [label="laudo.liberado\nlaudo.invalidado\namostra.rejeitada"];
+  exchange -> q3 [label="amostra.*"];
+  exchange -> q4 [label="#"];
+  exchange -> q5 [label="laudo.liberado"];
+  q1 -> c1; q2 -> c2; q3 -> c3; q4 -> c4;
+  q5 -> c5a [label="competem\npela fila"]; q5 -> c5b;
+  {q1 q2 q3 q4 q5} -> dlx [style=dashed, color="#9a9a9a", label="nack", fontcolor="#7a7a7a"];
+  dlx -> dlq [style=dashed, color="#9a9a9a"];
+}

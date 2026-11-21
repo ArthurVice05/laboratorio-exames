@@ -1,0 +1,13 @@
+# Alternativa fora do Codespaces: sobe o RabbitMQ com o painel de administração.
+#   docker compose up -d
+# Painel: http://localhost:15672  (lab / lab123)
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: laboratorio-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: lab
+      RABBITMQ_DEFAULT_PASS: lab123
