@@ -1,7 +1,9 @@
 # 🧪 Laboratório de Exames — Mensageria com RabbitMQ
 
-**Disciplina:** Sistemas Distribuídos e Cloud Computing — Tema 06  
-**Tecnologias:** Java 21 · Spring Boot 3.5 · Spring AMQP · RabbitMQ 3
+**Grupo:** Procrastinadores  
+**Tema:** 06 — Laboratório de exames  
+**Disciplina:** Sistemas Distribuídos e Cloud Computing  
+**Tecnologias:** Java 21 · Spring Boot 3.5 · Spring AMQP · RabbitMQ 3.13 ou 4.x
 
 Um laboratório didático acompanha laudos e a triagem de amostras. Uma **aplicação produtora** registra os fatos do domínio e publica eventos no RabbitMQ. **Cinco responsabilidades de consumo** reagem a eles de forma independente, cada uma no seu próprio processo. Todos os dados são fictícios.
 
@@ -81,6 +83,27 @@ A topologia é declarada no código ([`RabbitConfig.java`](src/main/java/br/edu/
 | `lab.auditoria` | fila durável | binding `#` |
 | `lab.indicadores` | fila durável | binding `laudo.liberado`, **uma fila só para as 2 instâncias** |
 | `laboratorio.dlx` → `laboratorio.dlq` | fanout + fila | recebe mensagens rejeitadas (`nack`) por qualquer fila |
+
+### Definições exportadas (`definitions.json`)
+
+O arquivo [`definitions.json`](definitions.json), na raiz do repositório, é a exportação do broker usado nos testes. Ele contém o vhost `/`, as exchanges `laboratorio.eventos` (topic) e `laboratorio.dlx` (fanout), as 6 filas com seus argumentos (`x-dead-letter-exchange`) e os 8 bindings com as chaves de roteamento. O projeto não usa políticas, por isso `policies` está vazio.
+
+**Usuários e senhas não foram exportados.** O RabbitMQ usado é um ambiente de demonstração e as credenciais são informadas na hora de executar (variáveis `RABBITMQ_USER` e `RABBITMQ_PASS`).
+
+Para importar em uma instância limpa do RabbitMQ, use uma das opções:
+
+- **Pelo painel:** *Overview* → *Import definitions* → escolha o `definitions.json` → *Upload broker definitions*.
+- **Pela linha de comando:**
+  ```bash
+  rabbitmqctl import_definitions definitions.json
+  ```
+- **Pela API HTTP:**
+  ```bash
+  curl -u <usuario>:<senha> -H "Content-Type: application/json" -X POST \
+       -d @definitions.json http://localhost:15672/api/definitions
+  ```
+
+Depois da importação, a aba *Queues and Streams* mostra as 6 filas e *Exchanges* → `laboratorio.eventos` → *Bindings* mostra as regras de roteamento. Importar é opcional: as aplicações também declaram a mesma topologia ao conectar.
 
 ### Matriz de roteamento (evento × consumidor)
 
@@ -223,6 +246,19 @@ scripts/testar.sh
 
 Ele termina com `Resultado: N OK, 0 falha(s)`. O passo a passo manual da apresentação está em [`docs/roteiro-apresentacao.md`](docs/roteiro-apresentacao.md).
 
+### Roteiro manual
+
+| Teste | Como fazer | Como comprovar |
+|---|---|---|
+| **Roteamento dos 4 eventos** | Publicar `laudo-liberado`, `laudo-invalidado`, `amostra-recebida` e `amostra-rejeitada` | Cada efeito aparece só nos consumidores marcados na matriz: `GET /portal/laudos`, `/comunicacao/avisos`, `/triagem/registros`, `/auditoria`, `/indicadores` |
+| **Divisão entre 2 instâncias** | Publicar um lote: `POST /eventos/lote/laudos-liberados?quantidade=100` | `GET /indicadores` mostra `processadosPorInstancia` dividido entre `indicadores-1` e `indicadores-2`, e o total igual ao número de laudos. No painel, `lab.indicadores` tem 2 consumidores |
+| **Interrupção e recuperação** | Parar a Comunicação, publicar `laudo-invalidado`, religar a Comunicação | Com ela parada, `lab.comunicacao` fica com a mensagem em *Ready*. Ao religar, a fila zera e o aviso aparece em `GET /comunicacao/avisos` |
+| **Duplicidade** | Publicar um `laudo-liberado` e reenviar o **mesmo** evento com `POST /eventos/{eventoId}/republicar` | `GET /auditoria?eventoId=...` mostra as entregas (a repetida com `"duplicado": true`), mas `GET /portal/laudos` mostra o laudo **uma vez só** e `GET /portal/resumo` conta a repetição ignorada |
+
+**Momento da confirmação:** o consumidor só envia o ACK depois de gravar o efeito no disco. Se cair antes disso, a mensagem é reentregue; se der erro, vai para a DLQ (ver [Processamento e confirmação](#processamento-e-confirmação-ack)).
+
+No Windows, os mesmos testes estão prontos para copiar e colar na pasta [`testes/`](testes/).
+
 Testes de unidade (contrato JSON e idempotência, sem precisar do broker):
 
 ```bash
@@ -237,4 +273,4 @@ Testes de unidade (contrato JSON e idempotência, sem precisar do broker):
 4. **ACK manual após o efeito gravado, nack para DLQ.** Uma mensagem nunca é perdida por um erro no meio do processamento.
 5. **Idempotência por `eventoId`.** A entrega é *at-least-once*, e o efeito é *exactly-once* na prática.
 6. **Efeitos em JSON Lines.** São simples de verificar (API ou `cat dados/...`), sobrevivem ao reinício e a trava de arquivo funciona entre processos.
-7. **Topologia declarada no código por todas as aplicações.** O ambiente fica reproduzível sem passos manuais no broker.
+7. **Topologia declarada no código e exportada em `definitions.json`.** O ambiente fica reproduzível sem passos manuais no broker, e o JSON permite conferir ou recriar a mesma configuração em outra instância.

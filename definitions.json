@@ -1,0 +1,148 @@
+{
+  "rabbit_version": "4.4.1",
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "policies": [],
+  "parameters": [],
+  "exchanges": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "laboratorio.dlx",
+      "type": "fanout",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "laboratorio.eventos",
+      "type": "topic",
+      "vhost": "/"
+    }
+  ],
+  "queues": [
+    {
+      "name": "lab.auditoria",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "laboratorio.dlx"
+      }
+    },
+    {
+      "name": "lab.comunicacao",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "laboratorio.dlx"
+      }
+    },
+    {
+      "name": "lab.indicadores",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "laboratorio.dlx"
+      }
+    },
+    {
+      "name": "lab.portal-resultados",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "laboratorio.dlx"
+      }
+    },
+    {
+      "name": "lab.triagem",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "laboratorio.dlx"
+      }
+    },
+    {
+      "name": "laboratorio.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "arguments": {},
+      "destination": "lab.auditoria",
+      "destination_type": "queue",
+      "routing_key": "#",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.comunicacao",
+      "destination_type": "queue",
+      "routing_key": "amostra.rejeitada",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.comunicacao",
+      "destination_type": "queue",
+      "routing_key": "laudo.invalidado",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.comunicacao",
+      "destination_type": "queue",
+      "routing_key": "laudo.liberado",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.indicadores",
+      "destination_type": "queue",
+      "routing_key": "laudo.liberado",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.portal-resultados",
+      "destination_type": "queue",
+      "routing_key": "laudo.liberado",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "lab.triagem",
+      "destination_type": "queue",
+      "routing_key": "amostra.*",
+      "source": "laboratorio.eventos",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "destination": "laboratorio.dlq",
+      "destination_type": "queue",
+      "routing_key": "",
+      "source": "laboratorio.dlx",
+      "vhost": "/"
+    }
+  ]
+}
