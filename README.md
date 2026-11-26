@@ -7,13 +7,11 @@ Um laboratório didático acompanha laudos e a triagem de amostras. Uma **aplica
 
 ## Integrantes
 
-| Nome completo | RA |
-|---|---|
-| Arthur Viceles Vida | 269329 |
-| _[Nome completo]_ | _[RA]_ |
-| _[Nome completo]_ | _[RA]_ |
-| _[Nome completo]_ | _[RA]_ |
-| _[Nome completo]_ | _[RA]_ |
+- Arthur Viceles Vida
+- Leonardo Vieira Alvim
+- Gabriel Gonçalves
+- Mauro Roque
+- Lucas Adriano
 
 ## Arquitetura
 
@@ -154,6 +152,33 @@ Pré-requisitos: Java 21, Docker, `curl` e `jq`.
 docker compose up -d         # RabbitMQ com painel (lab / lab123)
 scripts/iniciar-todos.sh
 ```
+
+### No Windows (sem Docker)
+
+Pré-requisitos: Java 21, Erlang e RabbitMQ instalados (o RabbitMQ roda como serviço do Windows). Habilite o painel uma vez, no *RabbitMQ Command Prompt (sbin dir)*:
+
+```
+rabbitmq-plugins enable rabbitmq_management
+```
+
+Depois reinicie o serviço do RabbitMQ. O painel fica em http://localhost:15672 (usuário `guest`, senha `guest`).
+
+No PowerShell, na pasta do projeto:
+
+```
+.\mvnw.cmd -DskipTests package
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 ligar
+```
+
+O `lab.ps1` sobe as 7 aplicações em segundo plano já usando o usuário `guest`. Para derrubar e religar uma delas:
+
+```
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 desligar comunicacao
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 ligar comunicacao
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 desligar     # todas
+```
+
+Os comandos de cada teste (envio de eventos, carga, interrupção e idempotência) estão na pasta [`testes/`](testes/).
 
 ### Iniciar e parar cada aplicação
 

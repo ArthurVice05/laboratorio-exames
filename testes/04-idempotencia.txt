@@ -1,0 +1,8 @@
+Idempotencia (mesmo evento entregue 3 vezes)
+Fila para acompanhar no painel: lab.portal-resultados
+
+$e = curl.exe -s -X POST localhost:8080/eventos/laudo-liberado | ConvertFrom-Json; $e | ConvertTo-Json
+curl.exe -s -X POST "localhost:8080/eventos/$($e.eventoId)/republicar" | ConvertFrom-Json | ConvertTo-Json
+curl.exe -s -X POST "localhost:8080/eventos/$($e.eventoId)/republicar" | ConvertFrom-Json | ConvertTo-Json
+curl.exe -s "localhost:8084/auditoria?eventoId=$($e.eventoId)" | ConvertFrom-Json | Select-Object tipo,duplicado,recebidoEm
+curl.exe -s localhost:8081/portal/laudos | ConvertFrom-Json | Where-Object eventoId -eq $e.eventoId | Select-Object laudoId,exame

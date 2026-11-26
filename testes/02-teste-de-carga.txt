@@ -1,0 +1,5 @@
+Teste de carga (500 laudos)
+Fila para acompanhar no painel: lab.indicadores
+
+1..5 | ForEach-Object { curl.exe -s -o NUL -X POST "localhost:8080/eventos/lote/laudos-liberados?quantidade=100" }
+curl.exe -s localhost:8085/indicadores | ConvertFrom-Json | ConvertTo-Json

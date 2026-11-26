@@ -1,0 +1,9 @@
+Envio de eventos e roteamento
+Fila para acompanhar no painel: Queues and Streams
+
+curl.exe -s -X POST localhost:8080/eventos/laudo-liberado | ConvertFrom-Json | ConvertTo-Json
+curl.exe -s -X POST localhost:8080/eventos/amostra-rejeitada | ConvertFrom-Json | ConvertTo-Json
+curl.exe -s -o NUL -X POST "localhost:8080/eventos/lote/laudos-liberados?quantidade=100"
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 desligar comunicacao
+curl.exe -s -X POST localhost:8080/eventos/laudo-invalidado | ConvertFrom-Json | ConvertTo-Json
+powershell -ExecutionPolicy Bypass -File .\windows\lab.ps1 ligar comunicacao

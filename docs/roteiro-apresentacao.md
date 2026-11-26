@@ -11,11 +11,11 @@ Deixem abertos:
 - o **painel do RabbitMQ** (porta 15672, usuário `lab`, senha `lab123`), nas abas *Queues* e *Exchanges*;
 - um **segundo terminal** para os comandos.
 
-> Cada integrante apresenta um bloco. Os nomes ficam definidos pelo grupo.
+> Cada integrante apresenta um bloco (a divisão pode ser trocada pelo grupo).
 
 ---
 
-## Bloco 1 — Arquitetura e contrato (3 min) · Integrante 1
+## Bloco 1 — Arquitetura e contrato (3 min) · Arthur Viceles Vida
 
 **O que mostrar:**
 
@@ -34,7 +34,7 @@ Deixem abertos:
 
 ---
 
-## Bloco 2 — Roteamento (5 min) · Integrante 2
+## Bloco 2 — Roteamento (5 min) · Leonardo Vieira Alvim
 
 Mostrem a **matriz evento × consumidor** do README. Antes de cada comando, **digam quem deve receber e quem não deve**. Depois confiram.
 
@@ -65,7 +65,7 @@ curl -s localhost:8085/indicadores | jq              # só o liberado
 
 ---
 
-## Bloco 3 — Trabalho concorrente (3 min) · Integrante 3
+## Bloco 3 — Trabalho concorrente (3 min) · Gabriel Gonçalves
 
 As duas instâncias já estão rodando (8085 e 8086). Publiquem 10 laudos distintos:
 
@@ -85,7 +85,7 @@ Para ver ao vivo: `tail -f logs/indicadores-1.log` e `tail -f logs/indicadores-2
 
 ---
 
-## Bloco 4 — Interrupção e recuperação (4 min) · Integrante 4
+## Bloco 4 — Interrupção e recuperação (4 min) · Mauro Roque
 
 ```bash
 scripts/parar.sh comunicacao
@@ -110,7 +110,7 @@ curl -s localhost:8080/filas | jq '.["lab.comunicacao"]'       # voltou a 0
 
 ---
 
-## Bloco 5 — Duplicidade e defesa (5 min) · Integrante 5
+## Bloco 5 — Duplicidade e defesa (5 min) · Lucas Adriano
 
 Peguem o `eventoId` de um laudo já publicado e republiquem com o **mesmo id**:
 
